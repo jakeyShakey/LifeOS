@@ -39,7 +39,7 @@ Life OS is a personal productivity application with:
 - Use environment variables for all keys. Never hardcode them.
 - Migrations go in `/supabase/migrations/` — named `NNNNN_description.sql` (e.g. `00005_add_tags.sql`)
 - Apply migrations via Supabase MCP `apply_migration` tool — the tool prepends a timestamp automatically
-- After any schema change, regenerate types: `supabase gen types typescript --project-id xrkpxtqazpywwmhzvfmn > src/types/database.ts`
+- After any schema change, regenerate types using the Supabase MCP tool `generate_typescript_types` — write output to `src/types/database.ts`. Do NOT use the `npx supabase gen types` CLI — it fails with "Forbidden resource" (requires service role auth the CLI doesn't have).
 
 ### React
 - TypeScript strict mode always — no `any` types without explicit justification
@@ -109,6 +109,12 @@ src/
 - Do NOT mark a task complete without running the app and verifying the feature works
 - Do NOT implement a hacky fix — if execution goes sideways, STOP and re-plan
 - Do NOT leave `any` types in `supabase.ts` long-term — run `supabase gen types` after every schema migration and import `Database` type into the client
+- Do NOT use `npx supabase gen types` CLI — it fails with "Forbidden resource". Always use the Supabase MCP `generate_typescript_types` tool instead, then write the output to `src/types/database.ts`
+- Do NOT set `"noEmit": true` in `tsconfig.node.json` — when used as a TypeScript project reference it must have `"composite": true` instead, otherwise `tsc` errors with TS6306/TS6310
+- Do NOT forget `src/vite-env.d.ts` containing `/// <reference types="vite/client" />` — without it, `import.meta.env` types are missing and TypeScript errors on all env var accesses
+- Do NOT forget to run `npm install` in the main repo root after merging a worktree branch — `node_modules` live in the worktree directory and don't carry over to the main working tree
+- Do NOT mix static and dynamic imports of the same module — if a module is already statically imported, use it directly; dynamic `import()` of the same path causes a Vite bundler warning and serves no benefit
+- Do NOT use `dangerousAllowBrowser` for the OpenAI client — the correct option is `dangerouslyAllowBrowser: true`
 
 ---
 
@@ -167,6 +173,8 @@ GOOGLE_CLIENT_SECRET=       # server-side only
 # AI
 ANTHROPIC_API_KEY=
 OPENAI_API_KEY=             # for embeddings
+VITE_ANTHROPIC_API_KEY=     # browser-side AI calls (scheduling, RAG, general)
+VITE_OPENAI_API_KEY=        # browser-side embeddings
 ```
 
 ---
