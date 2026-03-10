@@ -1,9 +1,7 @@
 import { createClient, User } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 
-// TODO: Run `supabase gen types typescript --project-id xrkpxtqazpywwmhzvfmn`
-// once schema stabilises and replace `any` with the generated Database type.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const supabase = createClient<any>(
+export const supabase = createClient<Database>(
   import.meta.env.VITE_SUPABASE_URL as string,
   import.meta.env.VITE_SUPABASE_ANON_KEY as string
 );
