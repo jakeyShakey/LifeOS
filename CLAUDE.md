@@ -32,11 +32,14 @@ Life OS is a personal productivity application with:
 ## Architecture Rules
 
 ### Supabase
+- Project ID: `xrkpxtqazpywwmhzvfmn` (eu-west-1)
 - ALWAYS implement RLS on every table. Policy: `user_id = auth.uid()`
 - NEVER expose a table without RLS — not even in dev
 - Single Supabase client instance in `/src/lib/supabase.ts` — never instantiate inline
 - Use environment variables for all keys. Never hardcode them.
-- Migrations go in `/supabase/migrations/` as timestamped SQL files
+- Migrations go in `/supabase/migrations/` — named `NNNNN_description.sql` (e.g. `00005_add_tags.sql`)
+- Apply migrations via Supabase MCP `apply_migration` tool — the tool prepends a timestamp automatically
+- After any schema change, regenerate types: `supabase gen types typescript --project-id xrkpxtqazpywwmhzvfmn > src/types/database.ts`
 
 ### React
 - TypeScript strict mode always — no `any` types without explicit justification
@@ -105,6 +108,7 @@ src/
 - Do NOT chunk documents without overlap — retrieval quality degrades significantly
 - Do NOT mark a task complete without running the app and verifying the feature works
 - Do NOT implement a hacky fix — if execution goes sideways, STOP and re-plan
+- Do NOT leave `any` types in `supabase.ts` long-term — run `supabase gen types` after every schema migration and import `Database` type into the client
 
 ---
 
