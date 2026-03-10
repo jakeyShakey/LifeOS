@@ -3,6 +3,28 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from './useAuth';
 import type { CalendarEvent } from '@/types';
 
+export function useCalendarEventsRange(start: Date, end: Date) {
+  const { user } = useAuth();
+
+  return useQuery<CalendarEvent[]>({
+    queryKey: ['calendar-events', 'range', start.toISOString(), end.toISOString(), user?.id],
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .select('*')
+        .eq('user_id', user!.id)
+        .gte('start_time', start.toISOString())
+        .lte('start_time', end.toISOString())
+        .order('start_time', { ascending: true });
+
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
 export function useCalendarEvents(date: Date) {
   const { user } = useAuth();
 
