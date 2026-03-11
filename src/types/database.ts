@@ -295,6 +295,7 @@ export type Database = {
           chunk_index: number
           content: string
           document_id: string
+          document_title: string
           id: string
           similarity: number
         }[]
