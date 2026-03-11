@@ -112,9 +112,14 @@ src/
 - Do NOT use `npx supabase gen types` CLI — it fails with "Forbidden resource". Always use the Supabase MCP `generate_typescript_types` tool instead, then write the output to `src/types/database.ts`
 - Do NOT set `"noEmit": true` in `tsconfig.node.json` — when used as a TypeScript project reference it must have `"composite": true` instead, otherwise `tsc` errors with TS6306/TS6310
 - Do NOT forget `src/vite-env.d.ts` containing `/// <reference types="vite/client" />` — without it, `import.meta.env` types are missing and TypeScript errors on all env var accesses
-- Do NOT forget to run `npm install` in the main repo root after merging a worktree branch — `node_modules` live in the worktree directory and don't carry over to the main working tree
+- Do NOT forget to run `npm install` in the main repo root after merging a worktree branch — `node_modules` live in the worktree directory and don't carry over to the main working tree (session 4: @tiptap/*, date-fns, @tailwindcss/typography; session 5: pdfjs-dist, @radix-ui/react-progress, @radix-ui/react-tabs)
+- Do NOT call `useCreateNote` with a plain string — the signature is `{ title: string; folder_id?: string | null }` (changed session 4; passing a string will cause a TypeScript error)
 - Do NOT mix static and dynamic imports of the same module — if a module is already statically imported, use it directly; dynamic `import()` of the same path causes a Vite bundler warning and serves no benefit
 - Do NOT use `dangerousAllowBrowser` for the OpenAI client — the correct option is `dangerouslyAllowBrowser: true`
+- Do NOT use `CREATE OR REPLACE FUNCTION` when a Postgres function's return type changes — Postgres will reject it with "cannot change return type". Use `DROP FUNCTION ... CASCADE` first, then `CREATE FUNCTION`
+- Do NOT import the pdfjs-dist worker as a bare module path — use the Vite `?url` suffix: `import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'` then set `pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl`
+- Do NOT use `git worktree remove` without `--force` when the worktree has untracked build artifacts (e.g. `dist/`) — it will fail; always use `--force` for worktree cleanup
+- Do NOT put onClick on outer row divs when the row contains a Checkbox — it intercepts checkbox clicks; keep Checkbox `onCheckedChange` and title `onClick` as separate handlers on separate elements
 
 ---
 
@@ -133,8 +138,8 @@ When a user makes a natural language scheduling request:
 ## Second Brain RAG Protocol
 
 Upload flow:
-1. Accept file (PDF, image, text, URL)
-2. Extract raw text (pdf-parse for PDFs, fetch+strip for URLs)
+1. Accept file (PDF, text, URL)
+2. Extract raw text (pdfjs-dist for PDFs, fetch+HTML-strip for URLs, raw string for text)
 3. Chunk into 500-token segments with 50-token overlap
 4. Embed each chunk with OpenAI embeddings
 5. Store in `document_chunks` with document_id, chunk_index, embedding
