@@ -18,7 +18,7 @@ function relativeTime(iso: string | null): string {
 function NoteCard({ note }: { note: Note }) {
   return (
     <Link
-      to="/notes"
+      to={`/notes?note=${note.id}`}
       className="block rounded-md px-3 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-700 transition-colors"
     >
       <p className="text-sm font-medium text-zinc-100 truncate">

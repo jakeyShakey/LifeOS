@@ -19,7 +19,7 @@ export function QuickCaptureWidget({ className }: QuickCaptureWidgetProps) {
     const title = value.trim();
     setValue('');
 
-    createNote(title, {
+    createNote({ title }, {
       onSuccess: () => {
         toast({
           title: 'Note created',

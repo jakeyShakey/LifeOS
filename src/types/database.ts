@@ -174,6 +174,7 @@ export type Database = {
           created_at: string | null
           id: string
           name: string
+          parent_id: string | null
           user_id: string
         }
         Insert: {
@@ -181,6 +182,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           name: string
+          parent_id?: string | null
           user_id: string
         }
         Update: {
@@ -188,9 +190,18 @@ export type Database = {
           created_at?: string | null
           id?: string
           name?: string
+          parent_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notes: {
         Row: {
@@ -199,6 +210,7 @@ export type Database = {
           folder_id: string | null
           id: string
           is_pinned: boolean | null
+          tags: string[] | null
           title: string
           updated_at: string | null
           user_id: string
@@ -209,6 +221,7 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_pinned?: boolean | null
+          tags?: string[] | null
           title?: string
           updated_at?: string | null
           user_id: string
@@ -219,6 +232,7 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_pinned?: boolean | null
+          tags?: string[] | null
           title?: string
           updated_at?: string | null
           user_id?: string

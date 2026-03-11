@@ -12,6 +12,7 @@ import { NotesPage } from '@/app/notes/NotesPage';
 import { BrainPage } from '@/app/brain/BrainPage';
 import { RemindersPage } from '@/app/reminders/RemindersPage';
 import { SettingsPage } from '@/app/settings/SettingsPage';
+import { QuickCaptureModal } from '@/components/notes/QuickCaptureModal';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +49,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <Toaster />
+          <QuickCaptureModal />
         </AuthProvider>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />
