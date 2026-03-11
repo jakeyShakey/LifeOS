@@ -13,6 +13,9 @@ import { BrainPage } from '@/app/brain/BrainPage';
 import { RemindersPage } from '@/app/reminders/RemindersPage';
 import { SettingsPage } from '@/app/settings/SettingsPage';
 import { QuickCaptureModal } from '@/components/notes/QuickCaptureModal';
+import { QuickReminderModal } from '@/components/reminders/QuickReminderModal';
+import { CommandPalette } from '@/components/CommandPalette';
+import { ShortcutsModal } from '@/components/ShortcutsModal';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,6 +53,9 @@ export default function App() {
           </Routes>
           <Toaster />
           <QuickCaptureModal />
+          <QuickReminderModal />
+          <CommandPalette />
+          <ShortcutsModal />
         </AuthProvider>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />

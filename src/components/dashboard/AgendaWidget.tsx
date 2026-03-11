@@ -1,4 +1,6 @@
+import { CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import type { CalendarEvent } from '@/types';
 
@@ -72,7 +74,7 @@ export function AgendaWidget({ className }: AgendaWidgetProps) {
       )}
 
       {!isLoading && !isError && events?.length === 0 && (
-        <p className="text-sm text-zinc-500 italic">No events today.</p>
+        <EmptyState icon={CalendarDays} message="Nothing scheduled today" />
       )}
 
       {!isLoading && !isError && events && events.length > 0 && (

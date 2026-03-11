@@ -1,5 +1,7 @@
+import { CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useUpcomingEvents } from '@/hooks/useCalendarEvents';
 import type { CalendarEvent } from '@/types';
 
@@ -69,7 +71,7 @@ export function UpcomingEventsWidget({ className }: UpcomingEventsWidgetProps) {
       )}
 
       {!isLoading && !isError && events?.length === 0 && (
-        <p className="text-sm text-zinc-500 italic">Nothing coming up.</p>
+        <EmptyState icon={CalendarDays} message="Nothing in the next 7 days" />
       )}
 
       {!isLoading && !isError && grouped.size > 0 && (

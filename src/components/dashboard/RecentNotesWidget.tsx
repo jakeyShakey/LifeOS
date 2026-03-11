@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
+import { Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useRecentNotes } from '@/hooks/useNotes';
 import type { Note } from '@/types';
 
@@ -65,7 +67,7 @@ export function RecentNotesWidget({ className }: RecentNotesWidgetProps) {
       )}
 
       {!isLoading && !isError && notes?.length === 0 && (
-        <p className="text-sm text-zinc-500 italic">No notes yet.</p>
+        <EmptyState icon={Pencil} message="Start capturing your thoughts" />
       )}
 
       {!isLoading && !isError && notes && notes.length > 0 && (

@@ -1,5 +1,7 @@
+import { Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useReminders, useCompleteReminder } from '@/hooks/useReminders';
 import type { Reminder } from '@/types';
 
@@ -74,7 +76,7 @@ export function RemindersWidget({ className }: RemindersWidgetProps) {
       )}
 
       {!isLoading && !isError && reminders?.length === 0 && (
-        <p className="text-sm text-zinc-500 italic">All clear!</p>
+        <EmptyState icon={Bell} message="You're all caught up" />
       )}
 
       {!isLoading && !isError && reminders && reminders.length > 0 && (
