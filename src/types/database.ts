@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          role: string
+          tool_calls: Json | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          role: string
+          tool_calls?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          tool_calls?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brain_areas: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_connections: {
         Row: {
           access_token: string
@@ -103,6 +195,39 @@ export type Database = {
           },
         ]
       }
+      document_areas: {
+        Row: {
+          area_id: string
+          document_id: string
+          user_id: string
+        }
+        Insert: {
+          area_id: string
+          document_id: string
+          user_id: string
+        }
+        Update: {
+          area_id?: string
+          document_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_areas_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "brain_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_areas_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_chunks: {
         Row: {
           chunk_index: number
@@ -143,7 +268,9 @@ export type Database = {
       }
       documents: {
         Row: {
+          chunk_count: number | null
           created_at: string | null
+          description: string | null
           id: string
           source_type: string
           title: string
@@ -151,7 +278,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          chunk_count?: number | null
           created_at?: string | null
+          description?: string | null
           id?: string
           source_type: string
           title: string
@@ -159,7 +288,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          chunk_count?: number | null
           created_at?: string | null
+          description?: string | null
           id?: string
           source_type?: string
           title?: string
@@ -287,6 +418,7 @@ export type Database = {
     Functions: {
       match_chunks: {
         Args: {
+          filter_area_ids?: string[]
           match_count?: number
           match_user_id: string
           query_embedding: string

@@ -204,6 +204,8 @@ export async function processAndStoreDocument(
     if (chunkError) throw chunkError;
   }
 
+  await supabase.from('documents').update({ chunk_count: chunks.length }).eq('id', doc.id);
+
   onProgress?.({ stage: 'done' });
   return doc;
 }

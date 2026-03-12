@@ -127,3 +127,62 @@ export function useNote(noteId: string) {
 
   return { ...query, updateNote, deleteNote };
 }
+
+export function useDeleteNoteById() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (noteId: string) => {
+      const { error } = await supabase.from('notes').delete().eq('id', noteId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+    },
+  });
+}
+
+export function useDuplicateNote() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (note: Note) => {
+      const { data, error } = await supabase
+        .from('notes')
+        .insert({
+          user_id: user!.id,
+          title: `${note.title} (copy)`,
+          content: note.content,
+          folder_id: note.folder_id,
+          tags: note.tags,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+    },
+  });
+}
+
+export function useUpdateNoteFolder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ noteId, folderId }: { noteId: string; folderId: string | null }) => {
+      const { error } = await supabase
+        .from('notes')
+        .update({ folder_id: folderId, updated_at: new Date().toISOString() })
+        .eq('id', noteId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+    },
+  });
+}

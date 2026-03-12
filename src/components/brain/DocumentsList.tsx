@@ -2,13 +2,13 @@ import { useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { FileText, Globe, Type } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useDocuments } from '@/hooks/useDocuments';
-import type { Document } from '@/types';
+import { useDocumentsWithAreas, type DocumentWithAreas } from '@/hooks/useDocuments';
 
 interface DocumentsListProps {
   searchQuery: string;
   selectedDocumentId: string | null;
   onSelectDocument: (id: string) => void;
+  selectedAreaIds?: string[];
 }
 
 const SOURCE_CONFIG: Record<string, { icon: React.ElementType; color: string; label: string }> = {
@@ -22,7 +22,7 @@ function DocumentCard({
   isSelected,
   onClick,
 }: {
-  doc: Document;
+  doc: DocumentWithAreas;
   isSelected: boolean;
   onClick: () => void;
 }) {
@@ -50,6 +50,24 @@ function DocumentCard({
         </span>
       </div>
       <p className="text-xs text-zinc-600 mt-1 ml-5">{relTime}</p>
+
+      {/* Area badges */}
+      {doc.areas.length > 0 && (
+        <div className="flex gap-1 mt-1.5 ml-5 flex-wrap">
+          {doc.areas.map((area) => (
+            <span
+              key={area.id}
+              className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+              style={{
+                backgroundColor: `${area.color ?? '#8b5cf6'}22`,
+                color: area.color ?? '#8b5cf6',
+              }}
+            >
+              {area.name}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -70,8 +88,11 @@ export function DocumentsList({
   searchQuery,
   selectedDocumentId,
   onSelectDocument,
+  selectedAreaIds = [],
 }: DocumentsListProps) {
-  const { data: documents, isLoading, isError, refetch } = useDocuments();
+  const { data: documents, isLoading, isError, refetch } = useDocumentsWithAreas(
+    selectedAreaIds.length > 0 ? selectedAreaIds : undefined
+  );
 
   const filtered = useMemo(() => {
     if (!documents) return [];

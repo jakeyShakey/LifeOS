@@ -7,6 +7,10 @@ export type Document = Database['public']['Tables']['documents']['Row'];
 export type Folder = Database['public']['Tables']['folders']['Row'];
 export type DocumentChunk = Database['public']['Tables']['document_chunks']['Row'];
 export type CalendarConnection = Database['public']['Tables']['calendar_connections']['Row'];
+export type AiConversation = Database['public']['Tables']['ai_conversations']['Row'];
+export type AiMessage = Database['public']['Tables']['ai_messages']['Row'];
+export type BrainArea = Database['public']['Tables']['brain_areas']['Row'];
+export type DocumentArea = Database['public']['Tables']['document_areas']['Row'];
 
 export interface SchedulingIntent {
   duration_minutes: number;

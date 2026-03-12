@@ -92,5 +92,18 @@ export function useFolders() {
     },
   });
 
-  return { ...query, tree, createFolder, renameFolder, deleteFolder };
+  const moveFolder = useMutation({
+    mutationFn: async ({ id, parentId }: { id: string; parentId: string | null }) => {
+      const { error } = await supabase
+        .from('folders')
+        .update({ parent_id: parentId })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+    },
+  });
+
+  return { ...query, tree, createFolder, renameFolder, deleteFolder, moveFolder };
 }

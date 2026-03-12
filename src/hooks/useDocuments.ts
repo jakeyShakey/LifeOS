@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { processAndStoreDocument, type UploadProgress } from '@/lib/embeddings';
 import { useAuth } from './useAuth';
-import type { Document, DocumentChunk } from '@/types';
+import type { BrainArea, Document, DocumentChunk } from '@/types';
+
+export type DocumentWithAreas = Document & { areas: BrainArea[] };
 
 export function useDocuments() {
   const { user } = useAuth();
@@ -70,6 +72,53 @@ export function useUploadDocument() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       queryClient.invalidateQueries({ queryKey: ['brain-stats'] });
+    },
+  });
+}
+
+export function useDocumentsWithAreas(areaIds?: string[]) {
+  const { user } = useAuth();
+  const hasAreaFilter = !!areaIds && areaIds.length > 0;
+
+  return useQuery<DocumentWithAreas[]>({
+    queryKey: ['documents', 'with-areas', areaIds ?? [], user?.id],
+    enabled: !!user,
+    staleTime: 30_000,
+    queryFn: async () => {
+      let query = supabase
+        .from('documents')
+        .select('*, document_areas(area_id, brain_areas(*))')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false });
+
+      if (hasAreaFilter) {
+        // Filter to documents that have at least one of the requested area IDs
+        query = query.in('document_areas.area_id', areaIds!);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const docs = (data ?? []) as (Document & {
+        document_areas: { area_id: string; brain_areas: BrainArea | null }[] | null;
+      })[];
+
+      const result: DocumentWithAreas[] = docs
+        .map((doc) => {
+          const areas = (doc.document_areas ?? [])
+            .map((da) => da.brain_areas)
+            .filter((a): a is BrainArea => a !== null);
+          const { document_areas: _da, ...rest } = doc as typeof doc & { document_areas: unknown };
+          return { ...rest, areas };
+        });
+
+      if (hasAreaFilter) {
+        return result.filter((doc) =>
+          areaIds!.some((aid) => doc.areas.some((a) => a.id === aid))
+        );
+      }
+
+      return result;
     },
   });
 }

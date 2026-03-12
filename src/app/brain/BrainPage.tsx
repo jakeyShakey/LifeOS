@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { DocumentUploader } from '@/components/brain/DocumentUploader';
 import { DocumentsList } from '@/components/brain/DocumentsList';
 import { DocumentDetail } from '@/components/brain/DocumentDetail';
+import { AreasSidebar } from '@/components/brain/AreasSidebar';
 import { querySecondBrain } from '@/lib/ai';
 import { useAuth } from '@/hooks/useAuth';
 import type { KnowledgeSource } from '@/types';
@@ -37,11 +38,22 @@ export function BrainPage() {
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploaderExpanded, setUploaderExpanded] = useState(false);
+  const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
 
   const [ragQuery, setRagQuery] = useState('');
   const [ragLoading, setRagLoading] = useState(false);
   const [ragResult, setRagResult] = useState<RagAnswer | null>(null);
   const [ragError, setRagError] = useState<string | null>(null);
+
+  const handleSelectArea = (areaId: string | null) => {
+    if (areaId === null) {
+      setSelectedAreaIds([]);
+    } else {
+      setSelectedAreaIds((prev) =>
+        prev.includes(areaId) ? prev.filter((id) => id !== areaId) : [...prev, areaId]
+      );
+    }
+  };
 
   const handleAsk = async () => {
     if (!ragQuery.trim() || !user) return;
@@ -49,7 +61,11 @@ export function BrainPage() {
     setRagResult(null);
     setRagError(null);
     try {
-      const result = await querySecondBrain(user.id, ragQuery.trim());
+      const result = await querySecondBrain(
+        user.id,
+        ragQuery.trim(),
+        selectedAreaIds.length ? selectedAreaIds : undefined
+      );
       setRagResult(result);
     } catch (err) {
       setRagError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -60,7 +76,15 @@ export function BrainPage() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Left panel */}
+      {/* Areas sidebar (200px) */}
+      <div className="w-[200px] shrink-0">
+        <AreasSidebar
+          selectedAreaIds={selectedAreaIds}
+          onSelectArea={handleSelectArea}
+        />
+      </div>
+
+      {/* Documents panel (288px) */}
       <aside className="w-72 shrink-0 border-r border-zinc-800 flex flex-col bg-zinc-950 overflow-hidden">
         {/* Header */}
         <div className="px-3 pt-4 pb-2 border-b border-zinc-800/50">
@@ -99,6 +123,7 @@ export function BrainPage() {
           <DocumentsList
             searchQuery={searchQuery}
             selectedDocumentId={selectedDocumentId}
+            selectedAreaIds={selectedAreaIds}
             onSelectDocument={(id) => {
               setSelectedDocumentId(id);
               setUploaderExpanded(false);
@@ -107,7 +132,7 @@ export function BrainPage() {
         </div>
       </aside>
 
-      {/* Right panel */}
+      {/* Right panel (flex-1) */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* RAG query bar */}
         <div className="px-6 py-4 border-b border-zinc-800/50 bg-zinc-950/50">
@@ -115,7 +140,11 @@ export function BrainPage() {
             <Input
               value={ragQuery}
               onChange={(e) => setRagQuery(e.target.value)}
-              placeholder="Ask a question about your documents…"
+              placeholder={
+                selectedAreaIds.length
+                  ? `Ask about ${selectedAreaIds.length} selected area${selectedAreaIds.length > 1 ? 's' : ''}…`
+                  : 'Ask a question about your documents…'
+              }
               className="flex-1 h-10 text-sm bg-zinc-900 border-zinc-700 focus:border-violet-500/60"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !ragLoading) handleAsk();

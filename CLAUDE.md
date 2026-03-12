@@ -120,6 +120,10 @@ src/
 - Do NOT import the pdfjs-dist worker as a bare module path — use the Vite `?url` suffix: `import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'` then set `pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl`
 - Do NOT use `git worktree remove` without `--force` when the worktree has untracked build artifacts (e.g. `dist/`) — it will fail; always use `--force` for worktree cleanup
 - Do NOT put onClick on outer row divs when the row contains a Checkbox — it intercepts checkbox clicks; keep Checkbox `onCheckedChange` and title `onClick` as separate handlers on separate elements
+- Do NOT pass `null` for optional Supabase RPC parameters typed as `T[] | undefined` — use `undefined` instead; TypeScript will reject `null` even though Postgres accepts it
+- Do NOT mix `useDraggable` and `useDroppable` on the same element without manually merging refs — both hooks return `setNodeRef` and you must call both
+- Do NOT import `ContextMenuTrigger` without explicitly naming it in the import — it is distinct from `ContextMenuSubTrigger` and TSC will not auto-suggest it
+- Do NOT forget to export `ContextMenuTrigger` from `context-menu.tsx` — it is a separate primitive from SubTrigger
 
 ---
 

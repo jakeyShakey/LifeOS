@@ -74,7 +74,8 @@ export async function handleDashboardQuery(userId: string, query: string): Promi
 
 export async function querySecondBrain(
   userId: string,
-  question: string
+  question: string,
+  filterAreaIds?: string[]
 ): Promise<{ answer: string; sources: KnowledgeSource[] }> {
   // Embed the question
   const embeddingResponse = await openai.embeddings.create({
@@ -89,6 +90,7 @@ export async function querySecondBrain(
     query_embedding: pgvectorStr,
     match_user_id: userId,
     match_count: 5,
+    filter_area_ids: filterAreaIds?.length ? filterAreaIds : undefined,
   });
 
   if (error) throw error;

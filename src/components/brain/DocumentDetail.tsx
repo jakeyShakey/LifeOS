@@ -1,7 +1,10 @@
-import { ExternalLink, FileText, Globe, Hash, Layers, Trash2, Type } from 'lucide-react';
+import { ExternalLink, FileText, Globe, Hash, Layers, Tag, Trash2, Type } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useDocument, useDeleteDocument } from '@/hooks/useDocuments';
+import { useBrainAreas } from '@/hooks/useBrainAreas';
+import { useDocumentAreas, useUpdateDocumentAreas } from '@/hooks/useDocumentAreas';
 
 interface DocumentDetailProps {
   documentId: string;
@@ -17,6 +20,18 @@ const SOURCE_ICONS: Record<string, React.ElementType> = {
 export function DocumentDetail({ documentId, onDelete }: DocumentDetailProps) {
   const { data, isLoading, isError } = useDocument(documentId);
   const deleteDocument = useDeleteDocument();
+  const { data: allAreas } = useBrainAreas();
+  const { data: docAreas } = useDocumentAreas(documentId);
+  const updateDocumentAreas = useUpdateDocumentAreas();
+
+  const assignedAreaIds = (docAreas ?? []).map((a) => a.id);
+
+  const toggleArea = (areaId: string) => {
+    const next = assignedAreaIds.includes(areaId)
+      ? assignedAreaIds.filter((id) => id !== areaId)
+      : [...assignedAreaIds, areaId];
+    updateDocumentAreas.mutate({ documentId, areaIds: next });
+  };
 
   if (isLoading) {
     return (
@@ -74,16 +89,77 @@ export function DocumentDetail({ documentId, onDelete }: DocumentDetailProps) {
               </a>
             )}
           </div>
+
+          {/* Current area pills */}
+          {(docAreas ?? []).length > 0 && (
+            <div className="flex gap-1 mt-2 flex-wrap">
+              {(docAreas ?? []).map((area) => (
+                <span
+                  key={area.id}
+                  className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                  style={{
+                    backgroundColor: `${area.color ?? '#8b5cf6'}22`,
+                    color: area.color ?? '#8b5cf6',
+                  }}
+                >
+                  {area.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleDelete}
-          disabled={deleteDocument.isPending}
-          className="text-zinc-500 hover:text-red-400 hover:bg-red-400/10 shrink-0"
-        >
-          <Trash2 size={14} />
-        </Button>
+
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Edit areas popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                title="Edit areas"
+              >
+                <Tag size={14} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-48 p-2 space-y-1">
+              <p className="text-xs font-medium text-zinc-500 px-1 pb-1">Assign areas</p>
+              {(allAreas ?? []).length === 0 ? (
+                <p className="text-xs text-zinc-600 px-1">No areas yet. Create one in the sidebar.</p>
+              ) : (
+                (allAreas ?? []).map((area) => {
+                  const checked = assignedAreaIds.includes(area.id);
+                  return (
+                    <button
+                      key={area.id}
+                      onClick={() => toggleArea(area.id)}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-zinc-800 transition-colors text-left"
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: area.color ?? '#8b5cf6' }}
+                      />
+                      <span className="text-xs text-zinc-300 flex-1">{area.name}</span>
+                      {checked && (
+                        <span className="text-xs text-violet-400">✓</span>
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </PopoverContent>
+          </Popover>
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleDelete}
+            disabled={deleteDocument.isPending}
+            className="text-zinc-500 hover:text-red-400 hover:bg-red-400/10"
+          >
+            <Trash2 size={14} />
+          </Button>
+        </div>
       </div>
 
       {/* Chunks */}

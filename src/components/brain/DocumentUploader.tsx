@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { useUploadDocument } from '@/hooks/useDocuments';
+import { useBrainAreas } from '@/hooks/useBrainAreas';
+import { useUpdateDocumentAreas } from '@/hooks/useDocumentAreas';
 import type { UploadProgress } from '@/lib/embeddings';
 
-type Stage = 'idle' | 'uploading' | 'success' | 'error';
+type Stage = 'idle' | 'uploading' | 'area-picker' | 'success' | 'error';
 
 const STAGE_LABELS: Record<UploadProgress['stage'], string> = {
   extracting: 'Extracting text…',
@@ -17,10 +19,90 @@ const STAGE_LABELS: Record<UploadProgress['stage'], string> = {
   done: 'Done',
 };
 
+function AreaPicker({
+  documentId,
+  documentTitle,
+  onDone,
+}: {
+  documentId: string;
+  documentTitle: string;
+  onDone: () => void;
+}) {
+  const { data: areas } = useBrainAreas();
+  const updateDocumentAreas = useUpdateDocumentAreas();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggle = (id: string) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
+  const handleSave = async () => {
+    if (selectedIds.length > 0) {
+      await updateDocumentAreas.mutateAsync({ documentId, areaIds: selectedIds });
+    }
+    onDone();
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <CheckCircle size={15} className="text-emerald-400 shrink-0" />
+        <p className="text-sm text-emerald-300 truncate flex-1">
+          <span className="font-medium">{documentTitle}</span> added
+        </p>
+      </div>
+
+      {areas && areas.length > 0 ? (
+        <>
+          <p className="text-xs text-zinc-500">Assign to areas:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {areas.map((area) => {
+              const isSelected = selectedIds.includes(area.id);
+              return (
+                <button
+                  key={area.id}
+                  onClick={() => toggle(area.id)}
+                  className="text-xs px-2 py-1 rounded-full border transition-colors"
+                  style={
+                    isSelected
+                      ? { backgroundColor: `${area.color ?? '#8b5cf6'}33`, color: area.color ?? '#8b5cf6', borderColor: area.color ?? '#8b5cf6' }
+                      : { borderColor: '#3f3f46', color: '#71717a', backgroundColor: 'transparent' }
+                  }
+                >
+                  {area.name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex gap-1.5">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={updateDocumentAreas.isPending}
+              className="flex-1 h-7 text-xs bg-violet-600 hover:bg-violet-500 text-white"
+            >
+              {selectedIds.length > 0 ? 'Save & Done' : 'Skip'}
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Button
+          size="sm"
+          onClick={onDone}
+          className="w-full h-7 text-xs bg-zinc-700 hover:bg-zinc-600 text-zinc-300"
+        >
+          Done
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export function DocumentUploader() {
   const [stage, setStage] = useState<Stage>('idle');
   const [progress, setProgress] = useState<UploadProgress>({ stage: 'extracting' });
   const [embedPct, setEmbedPct] = useState(0);
+  const [pendingDocId, setPendingDocId] = useState('');
   const [successTitle, setSuccessTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -40,6 +122,7 @@ export function DocumentUploader() {
     setUrlValue('');
     setTextValue('');
     setEmbedPct(0);
+    setPendingDocId('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -49,8 +132,8 @@ export function DocumentUploader() {
     try {
       const doc = await uploadMutation.mutateAsync({ input, type, onProgress: handleProgress });
       setSuccessTitle(doc.title);
-      setStage('success');
-      setTimeout(reset, 3000);
+      setPendingDocId(doc.id);
+      setStage('area-picker');
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Upload failed. Please try again.');
       setStage('error');
@@ -68,14 +151,13 @@ export function DocumentUploader() {
     if (file) upload(file, 'pdf');
   };
 
-  if (stage === 'success') {
+  if (stage === 'area-picker') {
     return (
-      <div className="p-3 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2">
-        <CheckCircle size={15} className="text-emerald-400 shrink-0" />
-        <p className="text-sm text-emerald-300 truncate flex-1">
-          <span className="font-medium">{successTitle}</span> added
-        </p>
-      </div>
+      <AreaPicker
+        documentId={pendingDocId}
+        documentTitle={successTitle}
+        onDone={reset}
+      />
     );
   }
 
