@@ -23,6 +23,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
+  ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import {
   AlertDialog,
@@ -95,30 +96,8 @@ function FolderNodeItem({
   return (
     <>
       <ContextMenu>
-        <ContextMenuContent className="w-48">
-          <ContextMenuItem onClick={() => { setRenameValue(node.name); setIsRenaming(true); }}>
-            <Pencil size={13} className="mr-2" />
-            Rename
-          </ContextMenuItem>
-          <ContextMenuItem onClick={() => onCreateNote(node.id)}>
-            <FilePlus size={13} className="mr-2" />
-            New note here
-          </ContextMenuItem>
-          <ContextMenuItem onClick={() => onCreateFolder(node.id)}>
-            <Plus size={13} className="mr-2" />
-            New subfolder
-          </ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem
-            className="text-red-400 focus:text-red-300"
-            onClick={() => setFolderToDelete(true)}
-          >
-            <Trash2 size={13} className="mr-2" />
-            Delete folder
-          </ContextMenuItem>
-        </ContextMenuContent>
-
-        <div ref={setRef}>
+        <ContextMenuTrigger asChild>
+          <div ref={setRef}>
           <div
             {...listeners}
             {...attributes}
@@ -208,7 +187,31 @@ function FolderNodeItem({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
+          </div>
+        </ContextMenuTrigger>
+
+        <ContextMenuContent className="w-48">
+          <ContextMenuItem onClick={() => { setRenameValue(node.name); setIsRenaming(true); }}>
+            <Pencil size={13} className="mr-2" />
+            Rename
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => onCreateNote(node.id)}>
+            <FilePlus size={13} className="mr-2" />
+            New note here
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => onCreateFolder(node.id)}>
+            <Plus size={13} className="mr-2" />
+            New subfolder
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem
+            className="text-red-400 focus:text-red-300"
+            onClick={() => setFolderToDelete(true)}
+          >
+            <Trash2 size={13} className="mr-2" />
+            Delete folder
+          </ContextMenuItem>
+        </ContextMenuContent>
       </ContextMenu>
 
       {/* Children */}

@@ -124,6 +124,13 @@ src/
 - Do NOT mix `useDraggable` and `useDroppable` on the same element without manually merging refs — both hooks return `setNodeRef` and you must call both
 - Do NOT import `ContextMenuTrigger` without explicitly naming it in the import — it is distinct from `ContextMenuSubTrigger` and TSC will not auto-suggest it
 - Do NOT forget to export `ContextMenuTrigger` from `context-menu.tsx` — it is a separate primitive from SubTrigger
+- Do NOT place `ContextMenuContent` before `ContextMenuTrigger` inside a `ContextMenu` — the trigger must come first (wrapping the target element), then the content; reversing the order silently breaks right-click
+- Do NOT use dnd-kit `DndContext` without configuring `PointerSensor` with `activationConstraint: { distance: 8 }` — without it, dnd-kit captures `pointerdown` immediately and swallows click/context-menu events, breaking onClick handlers, DropdownMenus, and ContextMenus on draggable elements
+- Do NOT use `onChange` on a `contentEditable` div — React does not fire it reliably; use `onInput` instead and always add `suppressContentEditableWarning` to silence the React warning
+- Do NOT manipulate DOM in a `contentEditable` div without explicitly moving the caret after insertion — insert a `\u00A0` text node after any injected element and call `range.setStart(spacer, 1)` + `sel.addRange(newRange)`, otherwise Safari places the cursor inside the non-editable element
+- Do NOT handle pill/chip removal in a `contentEditable` via `onClick` — use `onMouseDown` + `e.preventDefault()` on the outer editor div with `e.target.closest('[data-pill-remove]')` delegation; `mousedown` fires before `blur` so the pill is still in the DOM when you remove it
+- Do NOT allow HTML paste into a `contentEditable` editor — always intercept `onPaste`, call `e.preventDefault()`, and use `document.execCommand('insertText', false, plainText)` to strip all HTML before insertion
+- Do NOT reset a `contentEditable` component's DOM by setting `.innerHTML = ''` — increment a `key` prop to unmount/remount the element; this is simpler and avoids React reconciliation conflicts
 
 ---
 

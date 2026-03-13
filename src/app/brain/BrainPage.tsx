@@ -1,49 +1,18 @@
 import { useState } from 'react';
-import { ArrowRight, BookOpen, FileText, Globe, Loader2, Plus, Search, Type } from 'lucide-react';
+import { ArrowLeft, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DocumentUploader } from '@/components/brain/DocumentUploader';
 import { DocumentsList } from '@/components/brain/DocumentsList';
 import { DocumentDetail } from '@/components/brain/DocumentDetail';
 import { AreasSidebar } from '@/components/brain/AreasSidebar';
-import { querySecondBrain } from '@/lib/ai';
-import { useAuth } from '@/hooks/useAuth';
-import type { KnowledgeSource } from '@/types';
-
-const SOURCE_ICONS: Record<string, React.ElementType> = {
-  pdf: FileText,
-  url: Globe,
-  text: Type,
-};
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-zinc-600 gap-3">
-      <BookOpen size={32} className="text-zinc-700" />
-      <div className="text-center">
-        <p className="text-base font-medium text-zinc-500">Your Second Brain</p>
-        <p className="text-sm mt-1">Upload documents, then ask questions about them.</p>
-      </div>
-    </div>
-  );
-}
-
-interface RagAnswer {
-  answer: string;
-  sources: KnowledgeSource[];
-}
+import { BrainChat } from '@/components/brain/BrainChat';
 
 export function BrainPage() {
-  const { user } = useAuth();
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploaderExpanded, setUploaderExpanded] = useState(false);
   const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
-
-  const [ragQuery, setRagQuery] = useState('');
-  const [ragLoading, setRagLoading] = useState(false);
-  const [ragResult, setRagResult] = useState<RagAnswer | null>(null);
-  const [ragError, setRagError] = useState<string | null>(null);
 
   const handleSelectArea = (areaId: string | null) => {
     if (areaId === null) {
@@ -52,25 +21,6 @@ export function BrainPage() {
       setSelectedAreaIds((prev) =>
         prev.includes(areaId) ? prev.filter((id) => id !== areaId) : [...prev, areaId]
       );
-    }
-  };
-
-  const handleAsk = async () => {
-    if (!ragQuery.trim() || !user) return;
-    setRagLoading(true);
-    setRagResult(null);
-    setRagError(null);
-    try {
-      const result = await querySecondBrain(
-        user.id,
-        ragQuery.trim(),
-        selectedAreaIds.length ? selectedAreaIds : undefined
-      );
-      setRagResult(result);
-    } catch (err) {
-      setRagError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
-    } finally {
-      setRagLoading(false);
     }
   };
 
@@ -134,79 +84,32 @@ export function BrainPage() {
 
       {/* Right panel (flex-1) */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* RAG query bar */}
-        <div className="px-6 py-4 border-b border-zinc-800/50 bg-zinc-950/50">
-          <div className="flex gap-2">
-            <Input
-              value={ragQuery}
-              onChange={(e) => setRagQuery(e.target.value)}
-              placeholder={
-                selectedAreaIds.length
-                  ? `Ask about ${selectedAreaIds.length} selected area${selectedAreaIds.length > 1 ? 's' : ''}…`
-                  : 'Ask a question about your documents…'
-              }
-              className="flex-1 h-10 text-sm bg-zinc-900 border-zinc-700 focus:border-violet-500/60"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !ragLoading) handleAsk();
-              }}
-            />
-            <Button
-              onClick={handleAsk}
-              disabled={!ragQuery.trim() || ragLoading}
-              className="h-10 px-4 bg-violet-600 hover:bg-violet-500 text-white"
-            >
-              {ragLoading ? (
-                <Loader2 size={15} className="animate-spin" />
-              ) : (
-                <ArrowRight size={15} />
-              )}
-            </Button>
-          </div>
-
-          {/* Answer */}
-          {ragError && (
-            <p className="mt-3 text-sm text-red-400">{ragError}</p>
-          )}
-
-          {ragResult && (
-            <div className="mt-3 space-y-3">
-              <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                {ragResult.answer}
-              </p>
-              {ragResult.sources.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs text-zinc-600">Sources:</span>
-                  {ragResult.sources.map((src) => {
-                    const Icon = SOURCE_ICONS[src.document_id] ?? FileText;
-                    return (
-                      <button
-                        key={src.document_id}
-                        onClick={() => setSelectedDocumentId(src.document_id)}
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 text-xs text-zinc-400 hover:text-zinc-300 transition-colors"
-                      >
-                        <Icon size={10} />
-                        {src.title}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+        {selectedDocumentId ? (
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="px-4 py-2 border-b border-zinc-800/50 shrink-0">
+              <button
+                onClick={() => setSelectedDocumentId(null)}
+                className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                <ArrowLeft size={13} />
+                Back to chat
+              </button>
             </div>
-          )}
-        </div>
-
-        {/* Document detail or empty state */}
-        <div className="flex-1 overflow-hidden">
-          {selectedDocumentId ? (
             <DocumentDetail
               key={selectedDocumentId}
               documentId={selectedDocumentId}
               onDelete={() => setSelectedDocumentId(null)}
             />
-          ) : (
-            <EmptyState />
-          )}
-        </div>
+          </div>
+        ) : (
+          <BrainChat
+            selectedAreaIds={selectedAreaIds}
+            onSelectDocument={(id) => {
+              setSelectedDocumentId(id);
+              setUploaderExpanded(false);
+            }}
+          />
+        )}
       </main>
     </div>
   );

@@ -30,6 +30,7 @@ export type AIResponseType = 'scheduling_options' | 'knowledge_answer' | 'genera
 export interface KnowledgeSource {
   title: string;
   document_id: string;
+  areaNames?: string[];
 }
 
 export interface AIResponse {

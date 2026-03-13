@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FolderTree } from '@/components/notes/FolderTree';
@@ -47,6 +47,12 @@ export function NotesPage() {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null | undefined>(undefined);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+  );
 
   const { data: allFolders, tree, createFolder, renameFolder, deleteFolder, moveFolder } = useFolders();
   const { mutateAsync: createNote } = useCreateNote();
@@ -148,7 +154,7 @@ export function NotesPage() {
   const folderName = allFolders?.find((f) => f.id === selectedNote?.folder_id)?.name ?? null;
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="flex h-full overflow-hidden">
         {/* Left panel */}
         <aside className="w-72 shrink-0 border-r border-zinc-800 flex flex-col bg-zinc-950 overflow-hidden">
