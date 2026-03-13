@@ -5,6 +5,7 @@ import {
   FileText,
   Brain,
   Bell,
+  Bot,
   Settings,
   LogOut,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ const navItems = [
   { to: '/notes', icon: FileText, label: 'Notes' },
   { to: '/brain', icon: Brain, label: 'Second Brain' },
   { to: '/reminders', icon: Bell, label: 'Reminders' },
+  { to: '/ai', icon: Bot, label: 'AI Agent' },
 ] as const;
 
 export function Sidebar() {

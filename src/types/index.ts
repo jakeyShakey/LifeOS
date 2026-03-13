@@ -39,3 +39,20 @@ export interface AIResponse {
   answer?: string;
   sources?: KnowledgeSource[];
 }
+
+export interface AttachedNote { type: 'note'; id: string; title: string; content: string }
+export interface AttachedDocument { type: 'document'; id: string; title: string; rawText: string }
+export interface TagScope { type: 'tag_scope'; tags: string[] }
+export interface AreaScope { type: 'area_scope'; areaIds: string[]; areaNames: string[] }
+export type ContextAttachment = AttachedNote | AttachedDocument | TagScope | AreaScope
+export interface AgentContext {
+  currentPage?: string
+  currentNoteId?: string
+  currentNoteTitle?: string
+  attachments?: ContextAttachment[]
+}
+export interface AgentResponse {
+  message: string
+  toolCallsSummary: Array<{ toolName: string; summary: string }>
+  requiresConfirmation?: { toolName: string; message: string }
+}

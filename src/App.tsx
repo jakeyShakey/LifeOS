@@ -12,6 +12,7 @@ import { NotesPage } from '@/app/notes/NotesPage';
 import { BrainPage } from '@/app/brain/BrainPage';
 import { RemindersPage } from '@/app/reminders/RemindersPage';
 import { SettingsPage } from '@/app/settings/SettingsPage';
+import AiPage from '@/app/ai/AiPage';
 import { QuickCaptureModal } from '@/components/notes/QuickCaptureModal';
 import { QuickReminderModal } from '@/components/reminders/QuickReminderModal';
 import { CommandPalette } from '@/components/CommandPalette';
@@ -48,6 +49,7 @@ export default function App() {
               <Route path="/brain" element={<BrainPage />} />
               <Route path="/reminders" element={<RemindersPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/ai" element={<AiPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

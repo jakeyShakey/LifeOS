@@ -131,6 +131,9 @@ src/
 - Do NOT handle pill/chip removal in a `contentEditable` via `onClick` — use `onMouseDown` + `e.preventDefault()` on the outer editor div with `e.target.closest('[data-pill-remove]')` delegation; `mousedown` fires before `blur` so the pill is still in the DOM when you remove it
 - Do NOT allow HTML paste into a `contentEditable` editor — always intercept `onPaste`, call `e.preventDefault()`, and use `document.execCommand('insertText', false, plainText)` to strip all HTML before insertion
 - Do NOT reset a `contentEditable` component's DOM by setting `.innerHTML = ''` — increment a `key` prop to unmount/remount the element; this is simpler and avoids React reconciliation conflicts
+- Do NOT query `documents.raw_text` — that column does not exist. Raw text lives in `document_chunks.content`; reconstruct it by fetching chunks ordered by `chunk_index` and joining them
+- Do NOT insert into `ai_messages` without `user_id` — the schema requires both `conversation_id` and `user_id` as non-nullable fields
+- Do NOT use column casts (`::text`) inside Supabase `.or()` filter strings — the JS client generates invalid PostgREST syntax (400). Use separate `.ilike()` calls per column instead.
 
 ---
 
